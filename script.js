@@ -194,7 +194,6 @@ function algotirmo(){
 
 
 console.log("x = " + Robot.x  + "  y = " +Robot.y);
-tablero[Robot.x][Robot.y].dibuja(); 
 
 }
 
