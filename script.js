@@ -1,7 +1,8 @@
 var canvas;
 var ctx;
-var FPS = 3;
-
+var FPS = 10;
+let mensaje;
+let intervalo;
 //tablero
 var columnas =50;
 var filas = 50;
@@ -10,8 +11,11 @@ var tablero;
 //Robot
 var Robot = new robot(0,0);
 
+var img = new Image();
+img.src = 'mnc.png';
+
 //obejtivo
-var objetivo = new robot(40,40);
+var objetivo = new robot(Math.floor(Math.random()*columnas),Math.floor(Math.random()*filas));
 
 //cuadricula
 var anchoC;
@@ -38,7 +42,7 @@ function casillas(x,y){
   //tipo si es muro =1 o camino = 0
   this.tipo = 0;
 
-  var aleatiorio = Math.floor(Math.random()*5); 
+  var aleatiorio = Math.floor(Math.random()*7); 
   var aleatiorio2 = Math.floor(Math.random()*50);
   if(aleatiorio ==1)
     this.tipo = 1;
@@ -70,14 +74,7 @@ function robot(x,y){
    this.x = x;
    this.y = y;
  
-
-  this.setx = function(x){
-    this.x = x;
-  }
-  this.sety = function(y){
-    this.y = y;
-  }
-
+   this.tipo = 0;
 
    this.dibuja = function(){
  
@@ -88,13 +85,15 @@ function robot(x,y){
 }
 
 function redibujarRobot(x,y){
-  ctx.fillStyle = '#F1C40F';
-  ctx.fillRect(x*anchoC,y*altoC,anchoC,altoC);
+  ctx.drawImage(img ,x*anchoC,y*altoC);
+  //ctx.fillStyle = '#F1C40F';
+  //ctx.fillRect(x*anchoC,y*altoC,anchoC,altoC);
 }
 
 
 
 function iniciar(){
+  mensaje = document.getElementById("mensaje");
   canvas = document.getElementById("Canvas");
   ctx = canvas.getContext("2d");
 
@@ -112,7 +111,7 @@ function iniciar(){
   }
   
   //empezar el bucle
-  setInterval(function(){bucle();},1000/FPS);
+   intervalo = setInterval(function(){bucle();},1000/FPS);
 
 
 }
@@ -137,32 +136,76 @@ function algotirmo(){
   objetivo.dibuja();
   Robot.dibuja();
   redibujarRobot(Robot.x,Robot.y);
-  if(Robot.x >=columnas-1 || Robot.y >= filas-1 )
-    console.log("Fuera del escenario");
-  if(tablero[Robot.x+1][Robot.y].tipo == 1){
-
-    if(tablero[Robot.x][Robot.y+1].tipo == 1){
-
-     redibujarRobot(Robot.x-1,Robot.y);
-      tablero[Robot.x][Robot.y].dibuja();
-      Robot.x-=1;
+  if(Robot.x == objetivo.x && Robot.y == objetivo.y){
+    console.log("LLEGO A LA META");
+    mensaje.style.display="block";
+    clearInterval(intervalo);
     }
-    if (tablero[Robot.x][Robot.y+1].tipo == 1)
-    Robot.x-=1;
+    else if(Robot.x < objetivo.x){
+      if(Robot.x >=columnas-1 || Robot.y >= filas-1 )
+          console.log("Fuera del escenario");
+        if(tablero[Robot.x+1][Robot.y].tipo == 1){
 
-    Robot.y+=1;
-  }
-  else if(tablero[Robot.x+1][Robot.y].tipo == 0)
-   Robot.x+=1;
-    
-  console.log("x = " + Robot.x  + "  y = " +Robot.y);
-  tablero[Robot.x][Robot.y].dibuja();   
+          while(tablero[Robot.x][Robot.y+1].tipo == 1){
+            tablero[Robot.x][Robot.y].dibuja(); 
+            Robot.x-=1;
+            redibujarRobot(Robot.x,Robot.y);
+          }
+          while(tablero[Robot.x][Robot.y+1].tipo == 1){
+          Robot.x-=1;
+          redibujarRobot(Robot.x,Robot.y);
+          tablero[Robot.x+1][Robot.y].dibuja();
+          }
+          
+          Robot.y+=1;
+        }
+        else if(tablero[Robot.x+1][Robot.y].tipo == 0)
+        Robot.x+=1;
+    }else if (Robot.x == objetivo.x) {
+        if(tablero[Robot.x][Robot.y+1].tipo == 0)
+          Robot.y+=1;
+        else{
+          while(tablero[Robot.x][Robot.y+1].tipo == 1){
+            Robot.x-=1;
+            redibujarRobot(Robot.x,Robot.y);
+            tablero[Robot.x+1][Robot.y].dibuja();
+          }
+          Robot.y+=1;
+        }
+    }else if(Robot.y >= objetivo.y){
+        while(tablero[Robot.x+1][Robot.y].tipo == 1){
+        tablero[Robot.x][Robot.y].dibuja();
+        Robot.y-=1;
+        redibujarRobot(Robot.x,Robot.y);
+        }
+        while(tablero[Robot.x+1][Robot.y].tipo == 0){
+          tablero[Robot.x][Robot.y].dibuja();
+        Robot.x+=1;
+        redibujarRobot(Robot.x,Robot.y);
+        }
+
+    }else if(Robot.y > objetivo.y){
+      if(tablero[Robot.x][Robot.y-1].tipo == 0){
+        tablero[Robot.x][Robot.y].dibuja();
+        Robot.y-=1;
+        redibujarRobot(Robot.x,Robot.y);
+      }
+    }
+
+
+console.log("x = " + Robot.x  + "  y = " +Robot.y);
+tablero[Robot.x][Robot.y].dibuja(); 
+
 }
 
 
+
+
 function bucle(){
+  
   borraCanvas();
   dibujaTablero();
   algotirmo();
+  
   
 }
